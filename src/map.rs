@@ -1,4 +1,4 @@
-use bevy::{math::IVec2, prelude::*, utils::HashSet};
+use bevy::{math::IVec2, prelude::*};
 use bevy_ascii_terminal::Side;
 use rand::{
     Rng, SeedableRng,
@@ -17,7 +17,8 @@ pub const MAP_GEN_SETUP_LABEL: &str = "MAP_GEN_SETUP";
 
 impl Plugin for MapGenPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(
+        app.add_systems(
+            Startup,
             setup
                 //.after(PLAYER_SETUP_LABEL)
                 .label(MAP_GEN_SETUP_LABEL),
@@ -40,9 +41,7 @@ fn setup(mut commands: Commands, q_player: Query<(Entity, &Player)>) {
     //let rng = StdRng::seed_from_u64(settings.seed);
     let rng = StdRng::from_rng(ThreadRng::default()).unwrap();
 
-    let player = q_player
-        .get_single()
-        .map_or_else(|_| None, |(e, _)| Some(e));
+    let player = q_player.single().map_or_else(|_| None, |(e, _)| Some(e));
     let entities = MapGenEntities { player };
 
     MapGenerator::build(&mut commands, settings, rng, entities);
@@ -81,7 +80,7 @@ impl MapGenerator {
         mut rng: StdRng,
         entities: MapGenEntities,
     ) {
-        let mut map = Map(Grid::default(settings.map_size));
+        let mut map = Map(Grid::new(settings.map_size));
         let mut rooms: Vec<Rect> = Vec::with_capacity(50);
 
         generate_rooms(&mut map, &settings, &mut rng, &mut rooms);
@@ -144,8 +143,8 @@ impl MapGenerator {
 }
 
 fn get_random_ivec(rng: &mut StdRng, min: IVec2, max: IVec2) -> IVec2 {
-    let p_x = rng.gen_range(min.x..max.x);
-    let p_y = rng.gen_range(min.y..max.y);
+    let p_x = rng.random_range(min.x..max.x);
+    let p_y = rng.random_range(min.y..max.y);
 
     IVec2::new(p_x, p_y)
 }
@@ -157,11 +156,11 @@ fn generate_rooms(
     rooms: &mut Vec<Rect>,
 ) {
     for _ in 0..settings.iterations {
-        let w = rng.gen_range(settings.room_size.clone());
-        let h = rng.gen_range(settings.room_size.clone());
+        let w = rng.random_range(settings.room_size.clone());
+        let h = rng.random_range(settings.room_size.clone());
 
-        let x = rng.gen_range(2..map.0.side_index(Side::Right) as u32 - w - 1);
-        let y = rng.gen_range(2..map.0.side_index(Side::Top) as u32 - h - 1);
+        let x = rng.random_range(2..map.0.side_index(Side::Right) as u32 - w - 1);
+        let y = rng.random_range(2..map.0.side_index(Side::Top) as u32 - h - 1);
 
         let new_room = Rect::from_position_size((x as i32, y as i32), (w as i32, h as i32));
 
@@ -201,7 +200,7 @@ fn build_tunnels_between_rooms(map: &mut Map, rng: &mut StdRng, room_a: &Rect, r
     let (new_x, new_y) = room_b.center().into();
     let (prev_x, prev_y) = room_a.center().into();
 
-    if rng.gen_bool(0.5) {
+    if rng.random_bool(0.5) {
         build_horizontal_tunnel(map, prev_x, new_x, prev_y);
         build_vertical_tunnel(map, prev_y, new_y, new_x);
     } else {

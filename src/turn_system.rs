@@ -2,21 +2,9 @@ use bevy::prelude::*;
 
 pub struct TurnSystemPlugin;
 
-/// Label for the turn begin system. Occurs in [CoreStage::PreUpdate].
-pub const TURN_BEGIN_SYSTEM_LABEL: &str = "turnbegin";
-/// Label for the turn end system. Occurs in [CoreStage::PostUpdate].
-pub const TURN_END_SYSTEM_LABEL: &str = "turnend";
-
 impl Plugin for TurnSystemPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_to_stage(
-            CoreStage::PreUpdate,
-            turn_begin_system.label(TURN_BEGIN_SYSTEM_LABEL),
-        )
-        .add_system_to_stage(
-            CoreStage::PostUpdate,
-            turn_end_system.label(TURN_END_SYSTEM_LABEL),
-        );
+        app.add_systems(Update, (turn_begin_system, turn_end_system));
     }
 }
 

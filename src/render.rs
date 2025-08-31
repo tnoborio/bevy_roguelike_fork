@@ -10,18 +10,8 @@ use crate::{
     visibility::{MapMemory, MapView},
 };
 
-pub const WALL_COLOR: Color = Color::Rgba {
-    red: 0.866,
-    green: 0.866,
-    blue: 0.882,
-    alpha: 1.0,
-};
-pub const FLOOR_COLOR: Color = Color::Rgba {
-    red: 0.602,
-    green: 0.462,
-    blue: 0.325,
-    alpha: 1.0,
-};
+pub const WALL_COLOR: Color = Color::srgba(0.866, 0.866, 0.882, 1.0);
+pub const FLOOR_COLOR: Color = Color::srgba(0.602, 0.462, 0.325, 1.0);
 
 pub const RENDER_SYSTEM_LABEL: &str = "GAME_RENDER_SYSTEM";
 
@@ -53,12 +43,12 @@ fn render(
     q_memory: Query<&MapMemory>,
     mut q_render_terminal: Query<&mut Terminal, With<GameTerminal>>,
 ) {
-    let mut term = match q_render_terminal.get_single_mut() {
+    let mut term = match q_render_terminal.single_mut() {
         Ok(term) => term,
         Err(_) => return,
     };
 
-    let map = match q_map.get_single() {
+    let map = match q_map.single() {
         Ok(term) => term,
         Err(_) => return,
     };
@@ -69,7 +59,7 @@ fn render(
 
     term.clear();
 
-    if let Ok((entity, player_view)) = q_player.get_single() {
+    if let Ok((entity, player_view)) = q_player.single() {
         if let Ok(memory) = q_memory.get(entity) {
             render_memory(memory, map, &mut term);
         }

@@ -7,13 +7,11 @@ use crate::{
     movement::Position,
 };
 
-pub const UPDATE_MAP_STATE_SYSTEM_LABEL: &str = "update_map_state_system";
-
 pub struct MapStatePlugin;
 
 impl Plugin for MapStatePlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(update_map_state_system.label(UPDATE_MAP_STATE_SYSTEM_LABEL))
+        app.add_systems(Update, update_map_state_system)
             .init_resource::<MapObstacles>()
             .init_resource::<MapActors>();
     }
@@ -23,7 +21,7 @@ impl Plugin for MapStatePlugin {
 #[derive(Component, Default)]
 pub struct PathBlocker;
 
-#[derive(Component, Default)]
+#[derive(Resource)]
 pub struct MapObstacles(pub PathMap2d);
 impl std::ops::Deref for MapObstacles {
     type Target = PathMap2d;
@@ -33,7 +31,7 @@ impl std::ops::Deref for MapObstacles {
     }
 }
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Resource)]
 pub struct MapActors(pub Grid<Option<Entity>>);
 
 fn update_map_state_system(
@@ -52,13 +50,13 @@ fn update_map_state_system(
         return;
     }
 
-    if let Ok(map) = q_map.get_single() {
+    if let Ok(map) = q_map.single() {
         if blockers.0.len() != map.0.len() {
-            blockers.0 = Grid::default(map.0.size())
+            blockers.0 = Grid::new(map.0.size())
         }
 
         if entities.0.len() != map.0.len() {
-            entities.0 = Grid::default(map.0.size());
+            entities.0 = Grid::new(map.0.size());
         }
 
         for (i, tile) in map.0.iter().enumerate() {

@@ -7,25 +7,13 @@ use crate::{
     ui::PrintLog,
 };
 
-pub const RESOLVE_TARGET_EVENTS_SYSTEM_LABEL: &str = "resolve_target_events";
-pub const DEATH_SYSTEM_LABEL: &str = "death_system";
-
 pub struct CombatPlugin;
 
 impl Plugin for CombatPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<TargetEvent>()
             .add_event::<ActorKilledEvent>()
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                resolve_target_events.label(RESOLVE_TARGET_EVENTS_SYSTEM_LABEL),
-            )
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                death_system
-                    .after(RESOLVE_TARGET_EVENTS_SYSTEM_LABEL)
-                    .label(DEATH_SYSTEM_LABEL),
-            );
+            .add_systems(Update, (resolve_target_events, death_system).chain());
     }
 }
 
@@ -58,12 +46,14 @@ pub enum ActorEffect {
     Damage(i32),
 }
 
+#[derive(Event)]
 pub struct TargetEvent {
     pub actor: Entity,
     pub target: Entity,
     pub effect: ActorEffect,
 }
 
+#[derive(Event)]
 pub struct ActorKilledEvent {
     name: String,
 }
@@ -75,7 +65,7 @@ fn resolve_target_events(
     mut log: ResMut<PrintLog>,
     mut target_events: EventReader<TargetEvent>,
 ) {
-    for ev in target_events.iter() {
+    for ev in target_events.read() {
         let tar = ev.target;
         let actor = ev.actor;
         match ev.effect {
@@ -143,7 +133,7 @@ fn death_system(
             obstacles.0[pos] = false;
             blockers.0[pos] = None;
 
-            evt_killed.send(ActorKilledEvent {
+            evt_killed.write(ActorKilledEvent {
                 name: name.to_string(),
             });
             // TODO: Move to UI

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_ascii_terminal::{ui::*, *};
+use bevy_ascii_terminal::*;
 use interpolation::Lerp;
 
 use crate::{
@@ -15,7 +15,7 @@ pub struct UiPlugin;
 pub struct UiTerminal;
 
 /// Log for terminal messages to be displayed to the user.
-#[derive(Default)]
+#[derive(Default, Resource)]
 pub struct PrintLog {
     /// History of logged messages
     log: Vec<String>,
@@ -81,7 +81,7 @@ fn handle_print(
             term.put_string([1, y], text.fg(fg_color));
         }
 
-        if let Ok((hp, max)) = q_player.get_single() {
+        if let Ok((hp, max)) = q_player.single() {
             let hp_string = format!("HP: {} / {}", hp.0.to_string(), max.0.to_string());
             let y = term.side_index(Side::Top) as i32;
             let bar_width = term.width() as i32 - 20;

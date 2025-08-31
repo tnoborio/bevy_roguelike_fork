@@ -1,4 +1,4 @@
-use bevy::{math::IVec2, prelude::*};
+use bevy::prelude::*;
 use sark_grids::Grid;
 
 use crate::{
@@ -6,7 +6,7 @@ use crate::{
     movement::Position,
 };
 
-use adam_fov_rs::{self, GridPoint, fov};
+use adam_fov_rs::{self, GridPoint, compute_fov};
 
 pub const VIEW_SYSTEM_LABEL: &str = "VIEW_SYSTEM";
 
@@ -34,30 +34,26 @@ pub struct VisibilityMap<'a> {
     memory: Option<&'a mut MapMemory>,
 }
 
-impl<'a> adam_fov_rs::VisibilityMap for VisibilityMap<'a> {
-    fn is_opaque(&self, p: impl GridPoint) -> bool {
-        if !self.map.0.in_bounds(p) {
-            return true;
-        }
-        self.map.0[p] == MapTile::Wall
-    }
+// fn is_opaque = |p| matches!(game_map[index(p)], Tile::Wall);
 
-    fn is_in_bounds(&self, p: impl GridPoint) -> bool {
-        self.map.0.in_bounds(p)
-    }
+//(&self, p: impl GridPoint) -> bool {
+//    if !self.map.0.in_bounds(p) {
+//        return true;
+//    }
+//    self.map.0[p] == MapTile::Wall
+//}
 
-    fn set_visible(&mut self, p: impl GridPoint) {
-        let i = self.map.0.pos_to_index(p);
+fn is_in_bounds(&self, p: impl GridPoint) -> bool {
+    self.map.0.in_bounds(p)
+}
 
-        self.view.0[i] = true;
+fn set_visible(&mut self, p: impl GridPoint) {
+    let i = self.map.0.pos_to_index(p);
 
-        if let Some(memory) = &mut self.memory {
-            memory.0[i] = true;
-        }
-    }
+    self.view.0[i] = true;
 
-    fn dist(&self, a: impl GridPoint, b: impl GridPoint) -> f32 {
-        a.as_vec2().distance(b.as_vec2())
+    if let Some(memory) = &mut self.memory {
+        memory.0[i] = true;
     }
 }
 
@@ -69,13 +65,13 @@ fn view_system(
     >,
     q_map: Query<&Map>,
 ) {
-    if let Ok(map) = q_map.get_single() {
+    if let Ok(map) = q_map.single() {
         for (mut view, pos, range) in q_view.iter_mut() {
             //println!("Updating mapview");
             let view_vec = &mut view.0;
 
             if view_vec.len() != map.0.len() {
-                *view_vec = Grid::default(map.0.size()); //vec![false; map.0.len()];
+                *view_vec = Grid::new(map.0.size()); //vec![false; map.0.len()];
             }
 
             for b in view_vec.iter_mut() {
@@ -88,7 +84,7 @@ fn view_system(
                 memory: None,
             };
 
-            fov::compute(pos.0, range.0 as i32, &mut fov_map);
+            compute_fov(pos.0, range.0 as i32, &mut fov_map);
         }
     }
 }
@@ -97,13 +93,13 @@ fn view_memory_system(
     mut q_view: Query<(&mut MapView, &mut MapMemory, &Position, &ViewRange), Changed<Position>>,
     q_map: Query<&Map>,
 ) {
-    if let Ok(map) = q_map.get_single() {
+    if let Ok(map) = q_map.single() {
         for (mut view, mut memory, pos, range) in q_view.iter_mut() {
             //println!("Updating mapview");
             let view_vec = &mut view.0;
 
             if view_vec.len() != map.0.len() {
-                *view_vec = Grid::default(map.0.size());
+                *view_vec = Grid::new(map.0.size());
             }
 
             // Reset our view but not our memory
@@ -123,7 +119,7 @@ fn view_memory_system(
                 memory: Some(&mut memory),
             };
 
-            fov::compute(pos.0, range.0 as i32, &mut fov_map);
+            compute_fov(pos.0, range.0 as i32, &mut fov_map);
         }
     }
 }

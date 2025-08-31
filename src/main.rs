@@ -1,7 +1,5 @@
 use bevy::prelude::*;
 
-use bevy_ascii_terminal::{TerminalBundle, TiledCameraBundle};
-
 mod bundle;
 mod config;
 mod events;

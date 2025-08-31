@@ -87,9 +87,7 @@ fn player_input(
     mut evt_attack: EventWriter<TargetEvent>,
     mut rng: Local<DiceRng>,
 ) {
-    if let Ok((entity, _attack, mut pos, mut energy, dice, mut movement)) =
-        q_player.get_single_mut()
-    {
+    if let Ok((entity, _attack, mut pos, mut energy, dice, mut movement)) = q_player.single_mut() {
         if read_wait(&input) {
             energy.0 = 0;
             return;
@@ -135,43 +133,43 @@ fn player_input(
 fn read_movement(input: &Input<KeyCode>) -> IVec2 {
     let mut p = IVec2::ZERO;
 
-    if input.just_pressed(KeyCode::Numpad1) || input.just_pressed(KeyCode::Z) {
+    if input.just_pressed(KeyCode::Numpad1) || input.just_pressed(KeyCode::KeyZ) {
         p.x = -1;
         p.y = -1;
     }
     if input.just_pressed(KeyCode::Numpad2)
-        || input.just_pressed(KeyCode::X)
-        || input.just_pressed(KeyCode::Down)
+        || input.just_pressed(KeyCode::KeyX)
+        || input.just_pressed(KeyCode::ArrowDown)
     {
         p.y = -1;
     }
-    if input.just_pressed(KeyCode::Numpad3) || input.just_pressed(KeyCode::C) {
+    if input.just_pressed(KeyCode::Numpad3) || input.just_pressed(KeyCode::KeyC) {
         p.x = 1;
         p.y = -1;
     }
     if input.just_pressed(KeyCode::Numpad4)
-        || input.just_pressed(KeyCode::A)
-        || input.just_pressed(KeyCode::Left)
+        || input.just_pressed(KeyCode::KeyA)
+        || input.just_pressed(KeyCode::ArrowLeft)
     {
         p.x = -1;
     }
     if input.just_pressed(KeyCode::Numpad6)
-        || input.just_pressed(KeyCode::D)
-        || input.just_pressed(KeyCode::Right)
+        || input.just_pressed(KeyCode::KeyD)
+        || input.just_pressed(KeyCode::ArrowRight)
     {
         p.x = 1;
     }
-    if input.just_pressed(KeyCode::Numpad7) || input.just_pressed(KeyCode::Q) {
+    if input.just_pressed(KeyCode::Numpad7) || input.just_pressed(KeyCode::KeyQ) {
         p.x = -1;
         p.y = 1;
     }
     if input.just_pressed(KeyCode::Numpad8)
-        || input.just_pressed(KeyCode::W)
-        || input.just_pressed(KeyCode::Up)
+        || input.just_pressed(KeyCode::KeyW)
+        || input.just_pressed(KeyCode::ArrowUp)
     {
         p.y = 1;
     }
-    if input.just_pressed(KeyCode::Numpad9) || input.just_pressed(KeyCode::E) {
+    if input.just_pressed(KeyCode::Numpad9) || input.just_pressed(KeyCode::KeyE) {
         p.x = 1;
         p.y = 1;
     }
@@ -180,6 +178,6 @@ fn read_movement(input: &Input<KeyCode>) -> IVec2 {
 
 fn read_wait(input: &Input<KeyCode>) -> bool {
     input.just_pressed(KeyCode::Numpad5)
-        || input.just_pressed(KeyCode::LControl)
-        || input.just_pressed(KeyCode::RControl)
+        || input.just_pressed(KeyCode::ControlRight)
+        || input.just_pressed(KeyCode::ControlLeft)
 }

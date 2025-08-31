@@ -29,9 +29,7 @@ pub struct Monster;
 
 #[derive(Bundle)]
 pub struct MonsterBundle {
-    #[bundle]
     pub movable: MovingEntityBundle,
-    #[bundle]
     pub combatant_bundle: CombatantBundle,
     pub monster: Monster,
     pub name: Name,
@@ -61,7 +59,7 @@ impl MonsterBundle {
 
     pub fn new_orc() -> Self {
         Self {
-            movable: MovingEntityBundle::new(Color::RED, 'o', 15),
+            movable: MovingEntityBundle::new(Color::rgb(1.0, 0.0, 0.0), 'o', 15),
             combatant_bundle: CombatantBundle {
                 hp: HitPoints(25),
                 max_hp: MaxHitPoints(25),
@@ -112,7 +110,7 @@ fn monster_ai(
         let pos = &mut pos.0;
         // Check if the player is in view.
 
-        if let Ok((player, player_pos)) = q_player.get_single() {
+        if let Ok((player, player_pos)) = q_player.single() {
             let player_pos = player_pos.0;
             if view.0[player_pos] {
                 // Open the player and monster positions so pathfinding doesn't see them as obstacles
