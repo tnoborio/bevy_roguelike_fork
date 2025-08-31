@@ -1,30 +1,20 @@
 use bevy::prelude::*;
-use bracket_random::prelude::{DiceType};
+use bracket_random::prelude::DiceType;
 use sark_pathfinding::*;
 
 use crate::{
-    bundle::MovingEntityBundle, map_state::{
-        PathBlocker, 
-        MapObstacles, 
-        MapActors
-    }, 
-    visibility::{
-        MapView, 
-        VIEW_SYSTEM_LABEL, 
-        ViewRange
-    }, 
-    turn_system::{
-        Energy, 
-        TakingATurn
-    }, 
+    bundle::MovingEntityBundle,
     combat::{
-        CombatantBundle, 
-        HitPoints, 
-        MaxHitPoints, 
-        Defense, Strength, 
-        TargetEvent, 
-        ActorEffect, AttackDice
-    }, movement::Position, player::Player, rng::DiceRng};
+        ActorEffect, AttackDice, CombatantBundle, Defense, HitPoints, MaxHitPoints, Strength,
+        TargetEvent,
+    },
+    map_state::{MapActors, MapObstacles, PathBlocker},
+    movement::Position,
+    player::Player,
+    rng::DiceRng,
+    turn_system::{Energy, TakingATurn},
+    visibility::{MapView, VIEW_SYSTEM_LABEL, ViewRange},
+};
 
 pub struct MonstersPlugin;
 
@@ -59,7 +49,7 @@ impl MonsterBundle {
                 max_hp: MaxHitPoints(15),
                 defense: Defense(0),
                 strength: Strength(1),
-                attack_dice: AttackDice(DiceType::new(1,4,0)),
+                attack_dice: AttackDice(DiceType::new(1, 4, 0)),
             },
             monster: Default::default(),
             name: Name::new("Goblin"),
@@ -77,7 +67,7 @@ impl MonsterBundle {
                 max_hp: MaxHitPoints(25),
                 defense: Defense(1),
                 strength: Strength(3),
-                attack_dice: AttackDice(DiceType::new(2,6,0)),
+                attack_dice: AttackDice(DiceType::new(2, 6, 0)),
             },
             monster: Default::default(),
             name: Name::new("Orc"),
@@ -100,12 +90,21 @@ impl MonsterBundle {
     }
 }
 
-
 fn monster_ai(
     mut obstacles: ResMut<MapObstacles>,
     mut entities: ResMut<MapActors>,
     q_player: Query<(Entity, &Position), With<Player>>,
-    mut q_monster: Query<(Entity, &mut Position, &mut Energy, &AttackDice, &MapView, &Name), (With<Monster>, Without<Player>, With<TakingATurn>)>,
+    mut q_monster: Query<
+        (
+            Entity,
+            &mut Position,
+            &mut Energy,
+            &AttackDice,
+            &MapView,
+            &Name,
+        ),
+        (With<Monster>, Without<Player>, With<TakingATurn>),
+    >,
     mut attack_events: EventWriter<TargetEvent>,
     mut rng: Local<DiceRng>,
 ) {
@@ -113,7 +112,7 @@ fn monster_ai(
         let pos = &mut pos.0;
         // Check if the player is in view.
 
-        if let Ok((player,player_pos)) = q_player.get_single() {
+        if let Ok((player, player_pos)) = q_player.get_single() {
             let player_pos = player_pos.0;
             if view.0[player_pos] {
                 // Open the player and monster positions so pathfinding doesn't see them as obstacles

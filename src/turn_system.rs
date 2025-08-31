@@ -9,9 +9,14 @@ pub const TURN_END_SYSTEM_LABEL: &str = "turnend";
 
 impl Plugin for TurnSystemPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .add_system_to_stage(CoreStage::PreUpdate, turn_begin_system.label(TURN_BEGIN_SYSTEM_LABEL))
-        .add_system_to_stage(CoreStage::PostUpdate, turn_end_system.label(TURN_END_SYSTEM_LABEL));
+        app.add_system_to_stage(
+            CoreStage::PreUpdate,
+            turn_begin_system.label(TURN_BEGIN_SYSTEM_LABEL),
+        )
+        .add_system_to_stage(
+            CoreStage::PostUpdate,
+            turn_end_system.label(TURN_END_SYSTEM_LABEL),
+        );
     }
 }
 
@@ -55,7 +60,7 @@ fn turn_begin_system(
 }
 
 fn turn_end_system(
-    mut commands: Commands, 
+    mut commands: Commands,
     q_actors: Query<(Entity, &Energy), (With<Actor>, With<TakingATurn>)>,
 ) {
     for (entity, energy) in q_actors.iter() {

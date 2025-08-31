@@ -1,7 +1,11 @@
 use bevy::prelude::*;
 use bracket_random::prelude::DiceType;
 
-use crate::{ui::PrintLog, map_state::{MapObstacles, MapActors}, movement::Position};
+use crate::{
+    map_state::{MapActors, MapObstacles},
+    movement::Position,
+    ui::PrintLog,
+};
 
 pub const RESOLVE_TARGET_EVENTS_SYSTEM_LABEL: &str = "resolve_target_events";
 pub const DEATH_SYSTEM_LABEL: &str = "death_system";
@@ -10,14 +14,18 @@ pub struct CombatPlugin;
 
 impl Plugin for CombatPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .add_event::<TargetEvent>()
-        .add_event::<ActorKilledEvent>()
-        .add_system_to_stage(CoreStage::PostUpdate, resolve_target_events
-            .label(RESOLVE_TARGET_EVENTS_SYSTEM_LABEL))
-        .add_system_to_stage(CoreStage::PostUpdate, death_system
-            .after(RESOLVE_TARGET_EVENTS_SYSTEM_LABEL)
-            .label(DEATH_SYSTEM_LABEL));
+        app.add_event::<TargetEvent>()
+            .add_event::<ActorKilledEvent>()
+            .add_system_to_stage(
+                CoreStage::PostUpdate,
+                resolve_target_events.label(RESOLVE_TARGET_EVENTS_SYSTEM_LABEL),
+            )
+            .add_system_to_stage(
+                CoreStage::PostUpdate,
+                death_system
+                    .after(RESOLVE_TARGET_EVENTS_SYSTEM_LABEL)
+                    .label(DEATH_SYSTEM_LABEL),
+            );
     }
 }
 
@@ -27,7 +35,7 @@ pub struct MaxHitPoints(pub i32);
 #[derive(Debug, Component)]
 pub struct HitPoints(pub i32);
 
-#[derive(Default, Debug,Component)]
+#[derive(Default, Debug, Component)]
 pub struct Defense(pub i32);
 
 #[derive(Default, Debug, Component)]
@@ -78,15 +86,20 @@ fn resolve_target_events(
                         continue;
                     }
                     hp.0 += amount;
-                                  
+
                     // TODO: Move this into ui? No reason to handle it here, would make it simpler + cleaner
                     if let Ok(actor_name) = q_names.get(actor) {
                         if let Ok(target_name) = q_names.get(tar) {
-                            log.push(format!("{} heals {} for {} damage.", actor_name.as_str(), target_name.as_str(), amount));
+                            log.push(format!(
+                                "{} heals {} for {} damage.",
+                                actor_name.as_str(),
+                                target_name.as_str(),
+                                amount
+                            ));
                         }
                     }
                 }
-            },
+            }
             ActorEffect::Damage(amount) => {
                 if let Ok(_attack) = q_attack.get(actor) {
                     if let Ok((mut hp, _, def)) = q_defend.get_mut(tar) {
@@ -97,16 +110,20 @@ fn resolve_target_events(
                         }
                         hp.0 -= amount;
 
-                    // TODO: Move this into ui? No reason to handle it here, would make it simpler + cleaner
+                        // TODO: Move this into ui? No reason to handle it here, would make it simpler + cleaner
                         if let Ok(actor_name) = q_names.get(actor) {
                             if let Ok(target_name) = q_names.get(tar) {
-
-                                log.push(format!("{} attacks {} for {} damage.", actor_name.as_str(), target_name.as_str(), amount));
-                            } 
-                        } 
+                                log.push(format!(
+                                    "{} attacks {} for {} damage.",
+                                    actor_name.as_str(),
+                                    target_name.as_str(),
+                                    amount
+                                ));
+                            }
+                        }
                     }
                 }
-            },
+            }
         };
     }
 }
@@ -125,12 +142,12 @@ fn death_system(
             let pos = IVec2::from(pos.0).as_uvec2();
             obstacles.0[pos] = false;
             blockers.0[pos] = None;
-            
-            evt_killed.send(ActorKilledEvent{
-                name: name.to_string()
+
+            evt_killed.send(ActorKilledEvent {
+                name: name.to_string(),
             });
             // TODO: Move to UI
             log.push(format!("{} was killed!", name.as_str()));
         }
-    } 
+    }
 }

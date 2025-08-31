@@ -1,5 +1,4 @@
-use bracket_random::prelude::{RandomNumberGenerator, DiceType};
-
+use bracket_random::prelude::{DiceType, RandomNumberGenerator};
 
 pub struct DiceRng {
     rng: RandomNumberGenerator,
@@ -7,7 +6,7 @@ pub struct DiceRng {
 
 impl Default for DiceRng {
     fn default() -> Self {
-        Self { 
+        Self {
             rng: RandomNumberGenerator::new(),
         }
     }
@@ -15,7 +14,7 @@ impl Default for DiceRng {
 
 impl DiceRng {
     pub fn roll(&mut self, dice: DiceType) -> i32 {
-        self.rng.roll(dice) 
+        self.rng.roll(dice)
     }
 
     // pub fn roll_dice(&mut self, count: i32, faces: i32) -> i32 {

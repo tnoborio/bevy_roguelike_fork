@@ -1,15 +1,27 @@
 use bevy::{ecs::schedule::ShouldRun, prelude::*};
-use bevy_ascii_terminal::{*, ui::BorderGlyphs};
+use bevy_ascii_terminal::{ui::BorderGlyphs, *};
 
 use crate::{
+    GameTerminal,
+    combat::ActorKilledEvent,
     map::{Map, MapTile},
     movement::Position,
     player::Player,
-    visibility::{MapMemory, MapView}, GameTerminal, combat::ActorKilledEvent,
+    visibility::{MapMemory, MapView},
 };
 
-pub const WALL_COLOR: Color = Color::Rgba{ red:0.866, green:0.866, blue:0.882, alpha: 1.0};
-pub const FLOOR_COLOR: Color = Color::Rgba{ red:0.602, green:0.462, blue:0.325, alpha: 1.0};
+pub const WALL_COLOR: Color = Color::Rgba {
+    red: 0.866,
+    green: 0.866,
+    blue: 0.882,
+    alpha: 1.0,
+};
+pub const FLOOR_COLOR: Color = Color::Rgba {
+    red: 0.602,
+    green: 0.462,
+    blue: 0.325,
+    alpha: 1.0,
+};
 
 pub const RENDER_SYSTEM_LABEL: &str = "GAME_RENDER_SYSTEM";
 
@@ -17,13 +29,11 @@ pub const RENDER_SYSTEM_LABEL: &str = "GAME_RENDER_SYSTEM";
 pub struct RenderPlugin;
 impl Plugin for RenderPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set_to_stage(CoreStage::Last, 
+        app.add_system_set_to_stage(
+            CoreStage::Last,
             SystemSet::new()
-            .with_run_criteria(should_render)
-            .with_system(
-                render
-                .label(RENDER_SYSTEM_LABEL)
-            ),
+                .with_run_criteria(should_render)
+                .with_system(render.label(RENDER_SYSTEM_LABEL)),
         )
         .add_plugin(TerminalPlugin);
     }
@@ -112,7 +122,7 @@ fn render_map_in_view(view: &MapView, map: &Map, term: &mut Terminal) {
         if *seen {
             let p = map.0.index_to_pos(i);
             let tile = map.0[p];
-            
+
             // Convert to terminal position
             term.put_tile(p, Tile::from(tile));
         }
@@ -124,7 +134,7 @@ where
     Actors: Iterator<Item = (&'a Renderable, &'a Position)>,
 {
     for (renderable, pos) in actors {
-        let i = map.0.pos_to_index( pos.0 );
+        let i = map.0.pos_to_index(pos.0);
 
         if view.0[i] {
             term.put_tile(pos.0, Tile::from(renderable));
@@ -163,7 +173,7 @@ where
 fn render_full_map(map: &Map, term: &mut Terminal) {
     for x in 0..map.0.width() as i32 {
         for y in 0..map.0.height() as i32 {
-            let tile: Tile = match map.0[ [x as u32, y as u32] ] {
+            let tile: Tile = match map.0[[x as u32, y as u32]] {
                 MapTile::Wall => Tile {
                     glyph: '#',
                     fg_color: WALL_COLOR,

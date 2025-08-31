@@ -1,12 +1,11 @@
 use serde::Deserialize;
 use std::ops::Range;
 
-
 #[derive(Debug, Deserialize)]
 pub struct MapGenSettings {
     pub seed: u64,
     pub iterations: u32,
-    pub map_size: [u32;2],
+    pub map_size: [u32; 2],
     pub room_size: Range<u32>,
     pub monsters_per_room: Range<u32>,
     //pub items_per_room: Range<u32>,

@@ -2,7 +2,8 @@ use bevy::prelude::*;
 
 use crate::{
     movement::{Movement, Position},
-    render::Renderable, turn_system::{Speed, Energy, Actor},
+    render::Renderable,
+    turn_system::{Actor, Energy, Speed},
 };
 
 #[derive(Debug, Bundle)]

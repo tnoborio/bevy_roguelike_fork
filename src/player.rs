@@ -4,27 +4,30 @@ use bracket_random::prelude::DiceType;
 
 use crate::{
     bundle::MovingEntityBundle,
+    combat::{
+        ActorEffect, AttackDice, CombatantBundle, Defense, HitPoints, MaxHitPoints, Strength,
+        TargetEvent,
+    },
+    events::AttackEvent,
     map_state::{MapActors, MapObstacles},
     monster::Monster,
     movement::{Movement, Position},
-    visibility::{MapMemory, MapView, ViewRange}, events::AttackEvent, turn_system::{TakingATurn, Energy}, combat::{CombatantBundle, HitPoints, MaxHitPoints, Defense, Strength, TargetEvent, ActorEffect, AttackDice}, rng::DiceRng,
+    rng::DiceRng,
+    turn_system::{Energy, TakingATurn},
+    visibility::{MapMemory, MapView, ViewRange},
 };
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .add_startup_system_to_stage(StartupStage::PreStartup, spawn_player)
-        //.add_startup_system(spawn_player.label(PLAYER_SETUP_LABEL))
-        .add_system_to_stage(CoreStage::PreUpdate, player_input);
-        
+        app.add_startup_system_to_stage(StartupStage::PreStartup, spawn_player)
+            //.add_startup_system(spawn_player.label(PLAYER_SETUP_LABEL))
+            .add_system_to_stage(CoreStage::PreUpdate, player_input);
     }
 }
 
-fn spawn_player(
-    mut commands: Commands
-) {
+fn spawn_player(mut commands: Commands) {
     commands.spawn_bundle(PlayerBundle::default());
 }
 
@@ -53,20 +56,29 @@ impl Default for PlayerBundle {
                 max_hp: MaxHitPoints(60),
                 defense: Defense(1),
                 strength: Strength(3),
-                attack_dice: AttackDice(DiceType::new(5,3,0)),
+                attack_dice: AttackDice(DiceType::new(5, 3, 0)),
             },
             player: Default::default(),
             view: Default::default(),
             name: Name::new("Player"),
             memory: Default::default(),
             view_range: ViewRange(5),
-            
         }
     }
 }
 
 fn player_input(
-    mut q_player: Query<(Entity, &Strength, &mut Position, &mut Energy, &AttackDice, &mut Movement), (With<Player>, With<TakingATurn>)>,
+    mut q_player: Query<
+        (
+            Entity,
+            &Strength,
+            &mut Position,
+            &mut Energy,
+            &AttackDice,
+            &mut Movement,
+        ),
+        (With<Player>, With<TakingATurn>),
+    >,
     q_monsters: Query<&Name, With<Monster>>,
     input: Res<Input<KeyCode>>,
     mut obstacles: ResMut<MapObstacles>,
@@ -75,7 +87,9 @@ fn player_input(
     mut evt_attack: EventWriter<TargetEvent>,
     mut rng: Local<DiceRng>,
 ) {
-    if let Ok((entity, _attack, mut pos, mut energy, dice, mut movement)) = q_player.get_single_mut() {
+    if let Ok((entity, _attack, mut pos, mut energy, dice, mut movement)) =
+        q_player.get_single_mut()
+    {
         if read_wait(&input) {
             energy.0 = 0;
             return;
@@ -95,7 +109,7 @@ fn player_input(
         if obstacles.0[next] {
             if let Some(target) = actors.0[next] {
                 if let Ok(_name) = q_monsters.get(target) {
-                    evt_attack.send( TargetEvent {
+                    evt_attack.send(TargetEvent {
                         actor: entity,
                         target,
                         effect: ActorEffect::Damage(attack),
@@ -125,24 +139,36 @@ fn read_movement(input: &Input<KeyCode>) -> IVec2 {
         p.x = -1;
         p.y = -1;
     }
-    if input.just_pressed(KeyCode::Numpad2) || input.just_pressed(KeyCode::X) || input.just_pressed(KeyCode::Down) {
+    if input.just_pressed(KeyCode::Numpad2)
+        || input.just_pressed(KeyCode::X)
+        || input.just_pressed(KeyCode::Down)
+    {
         p.y = -1;
     }
     if input.just_pressed(KeyCode::Numpad3) || input.just_pressed(KeyCode::C) {
         p.x = 1;
         p.y = -1;
     }
-    if input.just_pressed(KeyCode::Numpad4) || input.just_pressed(KeyCode::A) || input.just_pressed(KeyCode::Left) {
+    if input.just_pressed(KeyCode::Numpad4)
+        || input.just_pressed(KeyCode::A)
+        || input.just_pressed(KeyCode::Left)
+    {
         p.x = -1;
     }
-    if input.just_pressed(KeyCode::Numpad6) || input.just_pressed(KeyCode::D) || input.just_pressed(KeyCode::Right) {
+    if input.just_pressed(KeyCode::Numpad6)
+        || input.just_pressed(KeyCode::D)
+        || input.just_pressed(KeyCode::Right)
+    {
         p.x = 1;
     }
     if input.just_pressed(KeyCode::Numpad7) || input.just_pressed(KeyCode::Q) {
         p.x = -1;
         p.y = 1;
     }
-    if input.just_pressed(KeyCode::Numpad8) || input.just_pressed(KeyCode::W) || input.just_pressed(KeyCode::Up) {
+    if input.just_pressed(KeyCode::Numpad8)
+        || input.just_pressed(KeyCode::W)
+        || input.just_pressed(KeyCode::Up)
+    {
         p.y = 1;
     }
     if input.just_pressed(KeyCode::Numpad9) || input.just_pressed(KeyCode::E) {
@@ -152,6 +178,8 @@ fn read_movement(input: &Input<KeyCode>) -> IVec2 {
     p
 }
 
-fn read_wait(input: &Input<KeyCode>) -> bool { 
-    input.just_pressed(KeyCode::Numpad5) || input.just_pressed(KeyCode::LControl) || input.just_pressed(KeyCode::RControl)
+fn read_wait(input: &Input<KeyCode>) -> bool {
+    input.just_pressed(KeyCode::Numpad5)
+        || input.just_pressed(KeyCode::LControl)
+        || input.just_pressed(KeyCode::RControl)
 }

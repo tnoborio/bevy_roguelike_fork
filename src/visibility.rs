@@ -6,7 +6,7 @@ use crate::{
     movement::Position,
 };
 
-use adam_fov_rs::{self, fov, GridPoint};
+use adam_fov_rs::{self, GridPoint, fov};
 
 pub const VIEW_SYSTEM_LABEL: &str = "VIEW_SYSTEM";
 
@@ -75,7 +75,7 @@ fn view_system(
             let view_vec = &mut view.0;
 
             if view_vec.len() != map.0.len() {
-                *view_vec = Grid::default(map.0.size());//vec![false; map.0.len()];
+                *view_vec = Grid::default(map.0.size()); //vec![false; map.0.len()];
             }
 
             for b in view_vec.iter_mut() {

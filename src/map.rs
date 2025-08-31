@@ -1,13 +1,15 @@
-use bevy::{
-    math::{IVec2},
-    prelude::*,
-    utils::HashSet,
-};
+use bevy::{math::IVec2, prelude::*, utils::HashSet};
 use bevy_ascii_terminal::Side;
-use rand::{prelude::{StdRng, ThreadRng}, Rng, SeedableRng};
+use rand::{
+    Rng, SeedableRng,
+    prelude::{StdRng, ThreadRng},
+};
 use sark_grids::Grid;
 
-use crate::{config::{MapGenSettings}, monster::MonsterBundle, player::{Player}, shapes::Rect, GAME_SIZE, movement::Position};
+use crate::{
+    GAME_SIZE, config::MapGenSettings, monster::MonsterBundle, movement::Position, player::Player,
+    shapes::Rect,
+};
 
 pub struct MapGenPlugin;
 
@@ -15,18 +17,16 @@ pub const MAP_GEN_SETUP_LABEL: &str = "MAP_GEN_SETUP";
 
 impl Plugin for MapGenPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(setup
-            //.after(PLAYER_SETUP_LABEL)
-            .label(MAP_GEN_SETUP_LABEL)
+        app.add_startup_system(
+            setup
+                //.after(PLAYER_SETUP_LABEL)
+                .label(MAP_GEN_SETUP_LABEL),
         );
     }
 }
 
-fn setup(
-    mut commands: Commands,
-    q_player: Query<(Entity,&Player)>,
-) {
-  // Gen map
+fn setup(mut commands: Commands, q_player: Query<(Entity, &Player)>) {
+    // Gen map
     // let mut settings = match config::try_get_map_settings() {
     //     Ok(settings) => settings,
     //     Err(e) => panic!("{}", e),
@@ -40,10 +40,10 @@ fn setup(
     //let rng = StdRng::seed_from_u64(settings.seed);
     let rng = StdRng::from_rng(ThreadRng::default()).unwrap();
 
-    let player = q_player.get_single().map_or_else(|_|None,|(e,_)|Some(e));
-    let entities = MapGenEntities {
-        player,
-    };
+    let player = q_player
+        .get_single()
+        .map_or_else(|_| None, |(e, _)| Some(e));
+    let entities = MapGenEntities { player };
 
     MapGenerator::build(&mut commands, settings, rng, entities);
 }
@@ -215,7 +215,7 @@ fn build_horizontal_tunnel(map: &mut Map, x1: i32, x2: i32, y: i32) {
     let max = x1.max(x2);
 
     for x in min..=max {
-        map.0[ [x as u32, y as u32] ] = MapTile::Floor;
+        map.0[[x as u32, y as u32]] = MapTile::Floor;
     }
 }
 
@@ -224,6 +224,6 @@ fn build_vertical_tunnel(map: &mut Map, y1: i32, y2: i32, x: i32) {
     let max = y1.max(y2);
 
     for y in min..=max {
-        map.0[ [x as u32, y as u32] ] = MapTile::Floor;
+        map.0[[x as u32, y as u32]] = MapTile::Floor;
     }
 }

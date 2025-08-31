@@ -1,9 +1,10 @@
-use bevy::{prelude::*};
+use bevy::prelude::*;
 
 use bevy_ascii_terminal::{TerminalBundle, TiledCameraBundle};
 
 mod bundle;
 mod config;
+mod events;
 mod map;
 mod map_state;
 mod monster;
@@ -11,29 +12,26 @@ mod movement;
 mod player;
 mod render;
 mod shapes;
-mod visibility;
 mod ui;
-mod events;
+mod visibility;
 //mod web_resize;
-mod turn_system;
 mod combat;
 mod rng;
+mod turn_system;
 
 #[derive(Component)]
 pub struct GameTerminal;
 
+pub const VIEWPORT_SIZE: [u32; 2] = [80, 40];
 
-pub const VIEWPORT_SIZE: [u32;2] = [80,40];
-
-pub const UI_SIZE: [u32;2] = [VIEWPORT_SIZE[0],8];
+pub const UI_SIZE: [u32; 2] = [VIEWPORT_SIZE[0], 8];
 // TODO: Map size should be separate
-pub const GAME_SIZE: [u32;2] = [VIEWPORT_SIZE[0], VIEWPORT_SIZE[1] - UI_SIZE[1]];
-
+pub const GAME_SIZE: [u32; 2] = [VIEWPORT_SIZE[0], VIEWPORT_SIZE[1] - UI_SIZE[1]];
 
 fn setup(mut commands: Commands) {
     //commands.spawn().insert(gen.map);
 
-    let term_y = VIEWPORT_SIZE[1] as f32 / 2.0 - GAME_SIZE[1] as f32 / 2.0; 
+    let term_y = VIEWPORT_SIZE[1] as f32 / 2.0 - GAME_SIZE[1] as f32 / 2.0;
     let term_bundle = TerminalBundle {
         transform: Transform::from_xyz(0.0, term_y, 0.0),
         ..TerminalBundle::new().with_size([GAME_SIZE[0], GAME_SIZE[1] + 2])

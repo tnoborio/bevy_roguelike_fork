@@ -1,8 +1,13 @@
 use bevy::prelude::*;
-use bevy_ascii_terminal::{*, ui::*};
+use bevy_ascii_terminal::{ui::*, *};
 use interpolation::Lerp;
 
-use crate::{UI_SIZE, VIEWPORT_SIZE, events::AttackEvent, combat::{HitPoints, MaxHitPoints}, player::Player};
+use crate::{
+    UI_SIZE, VIEWPORT_SIZE,
+    combat::{HitPoints, MaxHitPoints},
+    events::AttackEvent,
+    player::Player,
+};
 
 pub struct UiPlugin;
 
@@ -25,16 +30,13 @@ impl PrintLog {
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup)
-        .add_system(handle_attacks)
-        .add_system(handle_print)
-        .init_resource::<PrintLog>()
-        ;
+            .add_system(handle_attacks)
+            .add_system(handle_print)
+            .init_resource::<PrintLog>();
     }
 }
 
-fn setup(
-    mut commands: Commands,
-) {
+fn setup(mut commands: Commands) {
     let term_y = -(VIEWPORT_SIZE[1] as f32 / 2.0) + UI_SIZE[1] as f32 / 2.0;
     let mut term = TerminalBundle {
         transform: Transform::from_xyz(0.0, term_y, 1.0),
@@ -46,10 +48,7 @@ fn setup(
     commands.spawn_bundle(term).insert(UiTerminal);
 }
 
-fn handle_attacks(
-    _print_log: ResMut<PrintLog>,
-    mut event_attacked: EventReader<AttackEvent>,
-) {
+fn handle_attacks(_print_log: ResMut<PrintLog>, mut event_attacked: EventReader<AttackEvent>) {
     for _ev in event_attacked.iter() {
         //print_log.push(format!("{} attacked {}", ev.attacker_name, ev.defender_name));
     }
@@ -71,15 +70,15 @@ fn handle_print(
         let border = BorderGlyphs::from_string(
             "╞═╡
              │ │
-             └─┘"
+             └─┘",
         );
         term.draw_border(border);
-        for (i,text) in print_log.log.iter().rev().enumerate().take(6) {
-            let (t, min,max) = (i as f32 / 6.0, 0.15, 1.0);
+        for (i, text) in print_log.log.iter().rev().enumerate().take(6) {
+            let (t, min, max) = (i as f32 / 6.0, 0.15, 1.0);
             let alpha = f32::lerp(&min, &max, &t);
             let y = term.side_index(Side::Top) as i32 - 1 - i as i32;
             let fg_color = Color::rgba(1.0, 1.0, 1.0, 1.0 - alpha);
-            term.put_string([1,y], text.fg(fg_color));
+            term.put_string([1, y], text.fg(fg_color));
         }
 
         if let Ok((hp, max)) = q_player.get_single() {
@@ -92,13 +91,12 @@ fn handle_print(
             let fg_color = Color::YELLOW;
             term.put_string([hp_x, y], hp_string.as_str().fg(fg_color));
 
-            let bar = UiProgressBar::new(hp.0, max.0).color_fill(
-                ColorFill::EmptyOrFilled(Color::rgb(0.05, 0.05, 0.05),Color::RED));
+            let bar = UiProgressBar::new(hp.0, max.0).color_fill(ColorFill::EmptyOrFilled(
+                Color::rgb(0.05, 0.05, 0.05),
+                Color::RED,
+            ));
             term.draw_progress_bar([bar_x, y], bar_width as usize, &bar)
             //term.draw_horizontal_bar_color([bar_x, y], bar_width, hp.0, max.0, Color::RED, Color::rgb(0.05, 0.05, 0.05));
         }
-        
-
     }
 }
-
