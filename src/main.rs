@@ -12,7 +12,6 @@ mod render;
 mod shapes;
 mod ui;
 mod visibility;
-//mod web_resize;
 mod combat;
 mod rng;
 mod turn_system;

@@ -13,7 +13,10 @@ impl Plugin for CombatPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<TargetEvent>()
             .add_event::<ActorKilledEvent>()
-            .add_systems(Update, (resolve_target_events, death_system).chain());
+            .add_systems(
+                Update,
+                (resolve_target_events, death_system).chain(),
+            );
     }
 }
 
@@ -130,7 +133,7 @@ fn death_system(
         if hp.0 <= 0 {
             commands.entity(entity).despawn();
             let pos = IVec2::from(pos.0).as_uvec2();
-            obstacles.0[pos] = false;
+            obstacles.0.obstacle_grid_mut().set_false(pos);
             blockers.0[pos] = None;
 
             evt_killed.write(ActorKilledEvent {
